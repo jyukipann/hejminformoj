@@ -54,7 +54,21 @@ df = pd.read_sql(query.statement, query.session.bind)
 # セッションのクローズ
 session.close()
 
-st.dataframe(
+selected = st.dataframe(
     df,
     hide_index=True,
+    on_select='rerun',
 )
+
+if st.button(
+        'Delete selected rows', 
+        disabled=selected["selection"]['rows'] == [], 
+        use_container_width=True):
+    for row in df.iloc[selected["selection"]['rows']].iterrows():
+        transaction_id = row[1]['id']
+
+        session = SessionLocal()
+        session.query(FinancialTransaction).filter_by(id=transaction_id).delete()
+        session.commit()
+        session.close()
+    st.rerun()

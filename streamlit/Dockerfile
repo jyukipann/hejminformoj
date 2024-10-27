@@ -9,6 +9,7 @@ RUN pip install --upgrade setuptools wheel
 RUN pip install pyarrow --upgrade --prefer-binary
 RUN pip install streamlit
 RUN pip install mysql-connector-python
+RUN pip install sqlalchemy pymysql cryptography
 
 # ポートの指定
 EXPOSE 8501

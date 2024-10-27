@@ -9,7 +9,7 @@ services:
       - db
     env_file:
       - .env
-    command: streamlit run /app/app.py
+    command: streamlit run /app/home.py
   db:
     image: mysql:latest
     volumes:

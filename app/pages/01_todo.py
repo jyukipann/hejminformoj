@@ -1,4 +1,3 @@
-import pathlib
 import streamlit as st  # type: ignore
 import mysql.connector
 import os
@@ -10,13 +9,17 @@ DB_USER = "root"
 DB_PASSWORD = os.environ.get("MYSQL_ROOT_PASSWORD")
 DB_NAME = "tasks_db"
 
-# MySQLデータベースの初期化
-def init_db():
+def get_connection():
     conn = mysql.connector.connect(
         host=DB_HOST,
         user=DB_USER,
         password=DB_PASSWORD
     )
+    return conn
+
+# MySQLデータベースの初期化
+def init_db():
+    conn = get_connection()
     c = conn.cursor()
     c.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
     c.execute(f"USE {DB_NAME}")
@@ -37,12 +40,7 @@ def init_db():
 
 # タスクの追加
 def add_task(name, estimated_time):
-    conn = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
+    conn = get_connection()
     c = conn.cursor()
     c.execute('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM tasks')
     next_sort_order = c.fetchone()[0]
@@ -53,12 +51,7 @@ def add_task(name, estimated_time):
 
 # タスクの読み込み
 def load_tasks():
-    conn = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
+    conn = get_connection()
     c = conn.cursor()
     c.execute('SELECT * FROM tasks ORDER BY sort_order')
     tasks = c.fetchall()
@@ -68,12 +61,7 @@ def load_tasks():
 
 # タスクの更新
 def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, sort_order=None):
-    conn = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
+    conn = get_connection()
     c = conn.cursor()
     if elapsed_time is not None:
         c.execute('UPDATE tasks SET elapsed_time = %s WHERE id = %s', (elapsed_time, task_id))
@@ -95,12 +83,7 @@ def update_task(task_id, elapsed_time=None, is_running=None, start_time=None, so
 
 # タスクの削除
 def delete_task(task_id):
-    conn = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
+    conn = get_connection()
     c = conn.cursor()
     c.execute('SELECT sort_order FROM tasks WHERE id = %s', (task_id,))
     sort_order = c.fetchone()[0]

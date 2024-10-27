@@ -40,16 +40,33 @@ Base.metadata.create_all(bind=engine)
 session = SessionLocal()
 
 # ORMによりクエリ文を生成
+# query = (
+#     session.query(
+#         FinancialTransaction,)
+#     .options(
+#         joinedload(FinancialTransaction.category, innerjoin=True), 
+#         joinedload(FinancialTransaction.payer, innerjoin=True))
+#     .limit(100)
+# )
 query = (
-    session.query(FinancialTransaction)
-    .options(
-        joinedload(FinancialTransaction.category), 
-        joinedload(FinancialTransaction.payer))
+    session.query(
+        # FinancialTransaction.id.label("transaction_id"),
+        FinancialTransaction.description.label("description"),
+        FinancialTransaction.date.label("date"),
+        Category.name.label("category_name"),
+        FinancialTransaction.amount.label("amount"),
+        Payer.name.label("payer_name"),
+        FinancialTransaction.is_split_bill.label("is_split_bill"),
+        FinancialTransaction.transaction_type.label("transaction_type"),
+    )
+    .join(Category, FinancialTransaction.category_id == Category.id)
+    .join(Payer, FinancialTransaction.payer_id == Payer.id)
     .limit(100)
 )
-
+# st.write(query)
 # as dataframe
 df = pd.read_sql(query.statement, query.session.bind)
+# st.write(df.columns)
 
 # セッションのクローズ
 session.close()
@@ -58,6 +75,10 @@ selected = st.dataframe(
     df,
     hide_index=True,
     on_select='rerun',
+    use_container_width=True,
+    column_config={
+        
+    }
 )
 
 if st.button(

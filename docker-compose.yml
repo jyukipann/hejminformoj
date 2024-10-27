@@ -16,3 +16,11 @@ services:
       - ./mysql:/var/lib/mysql
     env_file:
       - .env
+  db-ui:
+    image: phpmyadmin
+    ports:
+      - "7611:80"
+    depends_on:
+      - db
+    env_file:
+      - .env

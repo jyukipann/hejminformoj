@@ -39,13 +39,6 @@ Base.metadata.create_all(bind=engine)
 # セッションの作成
 session = SessionLocal()
 
-# ORMを使ってJOINクエリを実行
-# transactions = (
-#     session.query(FinancialTransaction)
-#     .options(joinedload(FinancialTransaction.category), joinedload(FinancialTransaction.payer))
-#     .limit(100)
-#     .all()
-# )
 # ORMによりクエリ文を生成
 query = (
     session.query(FinancialTransaction)
@@ -63,13 +56,5 @@ session.close()
 
 st.dataframe(
     df,
-    # column_config={
-    #     # 'category_id': 'カテゴリID', 
-    #     # 'payer_id': '支払者ID', 
-    #     'date': '日付', 
-    #     'amount': '金額', 
-    #     'description': '説明', 
-    #     'transaction_type': '取引タイプ', 
-    #     'is_split_bill': '割り勘'},
     hide_index=True,
 )

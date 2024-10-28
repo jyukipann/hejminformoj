@@ -42,14 +42,14 @@ session = SessionLocal()
 # ORMによりクエリ文を生成
 query = (
     session.query(
-        # FinancialTransaction.id.label("transaction_id"),
-        FinancialTransaction.description.label("description"),
-        FinancialTransaction.date.label("date"),
-        Category.name.label("category_name"),
-        FinancialTransaction.amount.label("amount"),
-        Payer.name.label("payer_name"),
-        FinancialTransaction.is_split_bill.label("is_split_bill"),
-        FinancialTransaction.transaction_type.label("transaction_type"),
+        FinancialTransaction.id,
+        FinancialTransaction.description.label("メモ"),
+        FinancialTransaction.date.label("日付"),
+        Category.name.label("カテゴリ"),
+        FinancialTransaction.amount.label("金額"),
+        Payer.name.label("payer_name").label("支払者"),
+        FinancialTransaction.is_split_bill.label("is割り勘"),
+        FinancialTransaction.transaction_type.label("種類"),
     )
     .join(Category, FinancialTransaction.category_id == Category.id)
     .join(Payer, FinancialTransaction.payer_id == Payer.id)

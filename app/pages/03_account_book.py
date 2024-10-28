@@ -40,14 +40,6 @@ Base.metadata.create_all(bind=engine)
 session = SessionLocal()
 
 # ORMによりクエリ文を生成
-# query = (
-#     session.query(
-#         FinancialTransaction,)
-#     .options(
-#         joinedload(FinancialTransaction.category, innerjoin=True), 
-#         joinedload(FinancialTransaction.payer, innerjoin=True))
-#     .limit(100)
-# )
 query = (
     session.query(
         # FinancialTransaction.id.label("transaction_id"),

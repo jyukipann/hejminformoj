@@ -13,7 +13,7 @@
 ## 機能追加(予定)
 - CSV入出力
 - lifelog機能（何でも情報データベース）
-- 
+- home controller (ライト、モニター、PCなど)
 
 ## 参考
 - [【Streamlit】st.page_linkでマルチページのリンク先を自由に命名する](https://qiita.com/Ayumu-y/items/ecbd4d1645a0fbacfd3d)

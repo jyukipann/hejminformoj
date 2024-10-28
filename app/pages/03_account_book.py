@@ -4,7 +4,6 @@ from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from models.about_account_book import Category, Payer, FinancialTransaction
-Base = declarative_base()
 import pandas as pd
 
 
@@ -32,9 +31,6 @@ def get_engine():
 st.title('家計簿')
 # データベースエンジンとセッションの取得
 engine, SessionLocal = get_engine()
-
-# データベースのテーブルを作成
-Base.metadata.create_all(bind=engine)
 
 # セッションの作成
 session = SessionLocal()

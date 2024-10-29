@@ -1,5 +1,5 @@
 import streamlit as st  # type: ignore
-import mysql.connector
+import mysql.connector # type: ignore
 import os
 import time
 

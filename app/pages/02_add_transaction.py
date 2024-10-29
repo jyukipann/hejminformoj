@@ -1,8 +1,8 @@
 import os
 import streamlit as st  # type: ignore
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker # type: ignore
+from sqlalchemy import create_engine, text # type: ignore
+from sqlalchemy.ext.declarative import declarative_base # type: ignore
 from models.about_account_book import Category, Payer, FinancialTransaction
 Base = declarative_base()
 

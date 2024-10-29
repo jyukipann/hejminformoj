@@ -15,9 +15,9 @@ with left_column:
         ret = requests.get("http://192.168.10.250:1880/light?switch=off")
 with mid_column:
     if st.button("PC on", use_container_width=True):
-        ret = requests.get("http://192.168.10.250:1880/pc?switch=on")
+        ret = requests.get("http://192.168.10.250:1880/pc?power=on")
     if st.button("PC off", use_container_width=True):
-        ret = requests.get("http://192.168.10.250:1880/pc?switch=off")
+        ret = requests.get("http://192.168.10.250:1880/pc?power=off")
 with right_column:
     if st.button(f"{temp_data['temp_c']}℃" if temp_data is not None else "Refetch Temp", use_container_width=True):
         st.rerun()

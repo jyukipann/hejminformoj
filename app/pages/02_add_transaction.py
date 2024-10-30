@@ -120,7 +120,5 @@ with st.expander("支払者の追加"):
 with st.expander("種別の追加"):
     new_transaction_type = st.text_input("新しい種別名")
     if st.button("種別を追加"):
-        transaction_type = TransactionType(name=new_transaction_type)
-        session.add(transaction_type)
-        session.commit()
+        add_transaction_type(new_transaction_type)
         st.success(f"種別 '{new_transaction_type}' が追加されました！")

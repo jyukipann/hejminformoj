@@ -1,9 +1,10 @@
 import streamlit as st
 import requests
+
 left_column, mid_column, right_column = st.columns(3)
-temp_data = None
+env_data = None
 try:
-    temp_data = requests.get("http://192.168.10.250:1880/dht22").json()
+    env_data = requests.get("http://192.168.10.250:1880/dht22").json()
 except requests.exceptions.RequestException as e:
     pass
 with left_column:
@@ -19,5 +20,7 @@ with mid_column:
     if st.button("PC off", use_container_width=True):
         ret = requests.get("http://192.168.10.250:1880/pc?power=off")
 with right_column:
-    if st.button(f"{temp_data['temp_c']}℃" if temp_data is not None else "Refetch Temp", use_container_width=True):
+    if st.button(f"Temp {env_data['temp_c']:.1f}℃" if env_data is not None else "Refetch Temp", use_container_width=True):
+        st.rerun()
+    if st.button(f"Humid {env_data['humidity']:.1f}%" if env_data is not None else "Refetch Humid", use_container_width=True):
         st.rerun()

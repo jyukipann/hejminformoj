@@ -2,7 +2,7 @@ import os
 import streamlit as st  # type: ignore
 from sqlalchemy.orm import sessionmaker # type: ignore
 from sqlalchemy import create_engine, text # type: ignore
-from models.about_account_book import Category, Payer, FinancialTransaction
+from models.about_account_book import Category, Payer, TransactionType, FinancialTransaction
 import pandas as pd # type: ignore
 
 
@@ -44,10 +44,11 @@ query = (
         FinancialTransaction.amount.label("金額"),
         Payer.name.label("payer_name").label("支払者"),
         FinancialTransaction.is_split_bill.label("is割り勘"),
-        FinancialTransaction.transaction_type.label("種類"),
+        TransactionType.name.label("取引種別"),
     )
     .join(Category, FinancialTransaction.category_id == Category.id)
     .join(Payer, FinancialTransaction.payer_id == Payer.id)
+    .join(FinancialTransaction.transaction_type_id == TransactionType.id)
     .limit(100)
 )
 # st.write(query)
@@ -67,6 +68,7 @@ selected = st.dataframe(
         
     }
 )
+
 
 if st.button(
         'Delete selected rows', 

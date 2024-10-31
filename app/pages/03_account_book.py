@@ -1,4 +1,3 @@
-import os
 import streamlit as st  # type: ignore
 from models.about_account_book import Category, Payer, TransactionType, FinancialTransaction
 import pandas as pd # type: ignore
@@ -10,6 +9,11 @@ engine, SessionLocal = get_engine()
 
 # セッションの作成
 session = SessionLocal()
+
+# データベースにデータがあるか確認
+if not session.query(FinancialTransaction).first():
+    st.write('データがありません')
+    st.stop()
 
 # ORMによりクエリ文を生成
 query = (
@@ -23,15 +27,22 @@ query = (
         FinancialTransaction.is_split_bill.label("is割り勘"),
         TransactionType.name.label("取引種別"),
     )
-    .join(Category, FinancialTransaction.category_id == Category.id)
-    .join(Payer, FinancialTransaction.payer_id == Payer.id)
-    .join(FinancialTransaction.transaction_type_id == TransactionType.id)
+    .join(
+        Category,
+        FinancialTransaction.category_id == Category.id
+    )
+    .join(
+        Payer,
+        FinancialTransaction.payer_id == Payer.id
+    )
+    .join(
+        TransactionType,
+        FinancialTransaction.transaction_type_id == TransactionType.id
+    )
     .limit(100)
 )
-# st.write(query)
-# as dataframe
+
 df = pd.read_sql(query.statement, query.session.bind)
-# st.write(df.columns)
 
 # セッションのクローズ
 session.close()

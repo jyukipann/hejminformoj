@@ -20,7 +20,14 @@ def get_connection():
 
 # MySQLデータベースの初期化
 def init_db():
-    conn = get_connection()
+    try:
+        conn = get_connection()
+    except Exception as e:
+        conn = mysql.connector.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+        )
     c = conn.cursor()
     c.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
     c.execute(f"USE {DB_NAME}")

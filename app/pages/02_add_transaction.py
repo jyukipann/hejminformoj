@@ -1,32 +1,6 @@
-import os
 import streamlit as st  # type: ignore
-from sqlalchemy.orm import sessionmaker # type: ignore
-from sqlalchemy import create_engine, text # type: ignore
-from sqlalchemy.ext.declarative import declarative_base # type: ignore
 from models.about_account_book import Category, Payer, TransactionType, FinancialTransaction
-
-# データベースの設定と初期化
-def get_engine():
-    DB_HOST = "db"  # Dockerのホスト名
-    DB_USER = "root"
-    DB_PASSWORD = os.environ.get("MYSQL_ROOT_PASSWORD")
-    DB_NAME = "household_accounts_db"
-    
-    # ベースとなるURL (データベース指定なし)
-    BASE_DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}"
-    
-    # データベースが存在しない場合に作成する
-    engine = create_engine(BASE_DATABASE_URL)
-    with engine.connect() as connection:
-        connection.execute(text(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}"))
-    
-    # データベースを指定したURLにエンジンを再設定
-    DATABASE_URL = f"{BASE_DATABASE_URL}/{DB_NAME}"
-    engine = create_engine(DATABASE_URL, echo=True)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    Base = declarative_base()
-    Base.metadata.create_all(bind=engine)
-    return engine, SessionLocal
+from tools.db_init import get_engine
 
 # データベース初期化
 engine, SessionLocal = get_engine()
@@ -87,22 +61,31 @@ with st.form("financial_transaction_form"):
     if submit_button:
         # 選択したカテゴリと支払者のIDを取得
         category = session.query(Category).filter_by(name=category_name).first()
+        if category is None:
+            st.error("カテゴリが見つかりませんでした！")
         payer = session.query(Payer).filter_by(name=payer_name).first()
+        if payer is None:
+            st.error("支払者が見つかりませんでした！")
         transaction_type = session.query(TransactionType).filter_by(name=transaction_type).first()
+        if transaction_type is None:
+            st.error("取引種別が見つかりませんでした！")
         
-        # 取引をデータベースに追加
-        transaction = FinancialTransaction(
-            date=date,
-            amount=amount,
-            category_id=category.id,
-            payer_id=payer.id,
-            transaction_type_id=transaction_type.id,
-            description=description,
-            is_split_bill=is_split_bill
-        )
-        session.add(transaction)
-        session.commit()
-        st.success("取引が追加されました！")
+        try:
+            # 取引をデータベースに追加
+            transaction = FinancialTransaction(
+                date=date,
+                amount=amount,
+                category_id=category.id,
+                payer_id=payer.id,
+                transaction_type_id=transaction_type.id,
+                description=description,
+                is_split_bill=is_split_bill
+            )
+            session.add(transaction)
+            session.commit()
+            st.success("取引が追加されました！")
+        except Exception as e:
+            st.error(f"エラーが発生しました: {e}")
 
 # カテゴリや支払者を追加するフォーム
 with st.expander("カテゴリの追加"):
@@ -118,7 +101,7 @@ with st.expander("支払者の追加"):
         st.success(f"支払者 '{new_payer}' が追加されました！")
         
 with st.expander("種別の追加"):
-    new_transaction_type = st.text_input("新しい種別名")
+    new_transaction_type = st.text_input("新しい取引種別名")
     if st.button("種別を追加"):
         add_transaction_type(new_transaction_type)
         st.success(f"種別 '{new_transaction_type}' が追加されました！")

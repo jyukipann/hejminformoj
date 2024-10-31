@@ -27,7 +27,7 @@ class FinancialTransaction(Base):
     date = Column(Date, nullable=False)
     description = Column(String(255), nullable=False)
     amount = Column(Integer, nullable=False)
-    is_split_bill = Column(Boolean, default=False)
+    is_split_bill = Column(Boolean, default=False, nullable=False)
     
     category_id = Column(
         Integer,

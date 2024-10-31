@@ -6,7 +6,6 @@ from models.about_account_book import (
     Category, Payer, TransactionType, FinancialTransaction)
 import pandas as pd # type: ignore
 from tools.db_init import get_engine
-import pathlib
 
 # csv_upload
 # csv_download
@@ -98,5 +97,3 @@ st.download_button(
     file_name="account_book.csv",
     mime="text/csv"
 )
-# データベースエンジンとセッションの取得
-engine, SessionLocal = get_engine()

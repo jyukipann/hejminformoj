@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey # type: ignore
-from sqlalchemy.ext.declarative import declarative_base # type: ignore
 from sqlalchemy.orm import relationship # type: ignore
-
-Base = declarative_base()
+from .base_model import Base
 
 # データベースモデル
 class Category(Base):

@@ -1,7 +1,9 @@
 import os
 from sqlalchemy.orm import sessionmaker # type: ignore
 from sqlalchemy import create_engine, text # type: ignore
-from models.about_account_book import Base
+from models.about_account_book import Category, Payer, TransactionType, FinancialTransaction
+from models.about_users import User, Passkey
+from models.base_model import Base
 
 # docker container exec -it hejminformoj-db-1 bash
 # mysql -u root -p$MYSQL_ROOT_PASSWORD

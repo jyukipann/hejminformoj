@@ -11,6 +11,7 @@ RUN pip install streamlit
 RUN pip install mysql-connector-python
 RUN pip install sqlalchemy pymysql cryptography
 RUN pip install pandas
+RUN pip install webauthn
 
 # ポートの指定
 EXPOSE 8501

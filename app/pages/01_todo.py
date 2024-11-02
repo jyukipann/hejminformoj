@@ -2,6 +2,9 @@ import streamlit as st  # type: ignore
 import mysql.connector # type: ignore
 import os
 import time
+from tools.simple_auth import check_password
+if not check_password():
+    st.stop()
 
 # MySQLデータベースの設定
 DB_HOST = "db"  # Dockerのホスト名

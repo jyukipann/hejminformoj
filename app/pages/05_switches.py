@@ -1,5 +1,8 @@
 import streamlit as st
 import requests
+from tools.simple_auth import check_password
+if not check_password():
+    st.stop()
 
 left_column, mid_column, right_column = st.columns(3)
 env_data = None

@@ -1,6 +1,9 @@
 import streamlit as st  # type: ignore
 from models.about_account_book import Category, Payer, TransactionType, FinancialTransaction
 from tools.db_init import get_engine
+from tools.simple_auth import check_password
+if not check_password():
+    st.stop()
 
 # データベース初期化
 engine, SessionLocal = get_engine()

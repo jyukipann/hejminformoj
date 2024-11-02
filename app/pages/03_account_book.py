@@ -3,6 +3,9 @@ from models.about_account_book import Category, Payer, TransactionType, Financia
 import pandas as pd # type: ignore
 from tools.db_init import get_engine
 import datetime
+from tools.simple_auth import check_password
+if not check_password():
+    st.stop()
 
 st.title('家計簿')
 st.sidebar.link_button('DB', url='http://jyukipann.com:7611', icon=":material/database:")

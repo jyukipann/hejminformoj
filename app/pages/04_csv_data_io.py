@@ -1,4 +1,3 @@
-import os
 import streamlit as st  # type: ignore
 from sqlalchemy.orm import sessionmaker # type: ignore
 from sqlalchemy import create_engine, text # type: ignore
@@ -6,11 +5,10 @@ from models.about_account_book import (
     Category, Payer, TransactionType, FinancialTransaction)
 import pandas as pd # type: ignore
 from tools.db_init import get_engine
+from tools.simple_auth import check_password
+if not check_password():
+    st.stop()
 
-# csv_upload
-# csv_download
-# csv parse and arrange data
-# data to db
 
 # 各カテゴリのマッピング用辞書を作成
 def get_or_create_id(session, model, name):

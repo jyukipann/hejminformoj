@@ -26,7 +26,12 @@ st.title("家計簿のCSVデータの入出力")
 
 # csv_upload
 st.header("Upload CSV file")
-uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
+uploaded_file = st.file_uploader(
+    "Choose a CSV file",
+    type=['csv'],
+    disabled=True
+)
+
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     engine, SessionLocal = get_engine()

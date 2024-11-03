@@ -13,13 +13,11 @@ st.sidebar.link_button('DB', url='http://jyukipann.com:7611', icon=":material/da
 # データベースエンジンとセッションの取得
 engine, SessionLocal = get_engine()
 
-# セッションの作成
-session = SessionLocal()
-
-# データベースにデータがあるか確認
-if not session.query(FinancialTransaction).first():
-    st.write('データがありません')
-    st.stop()
+with SessionLocal() as session:
+    # データベースにデータがあるか確認
+    if not session.query(FinancialTransaction).first():
+        st.write('データがありません')
+        st.stop()
 
 if 'search_filters' not in st.session_state:
     today = datetime.date.today()
@@ -48,17 +46,18 @@ with st.expander('Filters', expanded=True):
         filters['date'][1],
         disabled=not filters['is_filter_by_date'])
     
-    
+    with SessionLocal() as session:
     # 各フィルターの選択項目を定義
-    category_options = [c.name for c in session.query(Category).all()]
+        category_options = [c.name for c in session.query(Category).all()]
+        payer_options = [p.name for p in session.query(Payer).all()]
+        transaction_type_options = [t.name for t in session.query(TransactionType).all()]
+    
     categories = st.multiselect('categories', category_options)
     filters['categories'] = categories
 
-    payer_options = [p.name for p in session.query(Payer).all()]
     payers = st.multiselect('Payer', payer_options, payer_options)
     filters['payers'] = payers
 
-    transaction_type_options = [t.name for t in session.query(TransactionType).all()]
     transaction_types = st.multiselect('取引種別', transaction_type_options)
     filters['transaction_types'] = transaction_types
 
@@ -74,57 +73,55 @@ with st.expander('Filters', expanded=True):
 # フィルターを適用する関数
 @st.cache_data
 def filter_account_book(filters):
-    # ベースクエリを作成
-    FT = FinancialTransaction
-    query = (
-        session.query(
-            FT.id,
-            FT.description,
-            FT.date,
-            Category.name.label('category'),
-            FT.amount,
-            Payer.name.label('payer'),
-            FT.is_split_bill,
-            TransactionType.name.label('transaction_type'),
+    with SessionLocal() as session:
+        # ベースクエリを作成
+        FT = FinancialTransaction
+        query = (
+            session.query(
+                FT.id,
+                FT.description,
+                FT.date,
+                Category.name.label('category'),
+                FT.amount,
+                Payer.name.label('payer'),
+                FT.is_split_bill,
+                TransactionType.name.label('transaction_type'),
+            )
+            .join(Category, FT.category_id == Category.id)
+            .join(Payer, FT.payer_id == Payer.id)
+            .join(TransactionType, FT.transaction_type_id == TransactionType.id)
         )
-        .join(Category, FT.category_id == Category.id)
-        .join(Payer, FT.payer_id == Payer.id)
-        .join(TransactionType, FT.transaction_type_id == TransactionType.id)
-    )
-    
-    if filters.get('date') and filters['is_filter_by_date']:
-        query = query.filter(FT.date.between(*filters['date']))
+        
+        if filters.get('date') and filters['is_filter_by_date']:
+            query = query.filter(FT.date.between(*filters['date']))
 
-    if filters.get('categories'):
-        query = query.filter(Category.name.in_(filters['categories']))
+        if filters.get('categories'):
+            query = query.filter(Category.name.in_(filters['categories']))
 
-    if filters.get('payers'):
-        query = query.filter(Payer.name.in_(filters['payers']))
+        if filters.get('payers'):
+            query = query.filter(Payer.name.in_(filters['payers']))
 
-    if filters.get('transaction_types'):
-        query = query.filter(TransactionType.name.in_(filters['transaction_types']))
+        if filters.get('transaction_types'):
+            query = query.filter(TransactionType.name.in_(filters['transaction_types']))
 
-    if filters.get('is_split_bill'):
-        if "割り勘" in filters['is_split_bill'] and "not割り勘" not in filters['is_split_bill']:
-            query = query.filter(FT.is_split_bill == True)
-        elif "not割り勘" in filters['is_split_bill'] and "割り勘" not in filters['is_split_bill']:
-            query = query.filter(FT.is_split_bill == False)
+        if filters.get('is_split_bill'):
+            if "割り勘" in filters['is_split_bill'] and "not割り勘" not in filters['is_split_bill']:
+                query = query.filter(FT.is_split_bill == True)
+            elif "not割り勘" in filters['is_split_bill'] and "割り勘" not in filters['is_split_bill']:
+                query = query.filter(FT.is_split_bill == False)
 
-    # dateでソート
-    query = query.order_by(FT.date.desc())
+        # dateでソート
+        query = query.order_by(FT.date.desc())
 
-    if isinstance(filters.get('limit'), int):  # "あるだけ全部" 以外の時
-        query = query.limit(filters['limit'])
+        if isinstance(filters.get('limit'), int):  # "あるだけ全部" 以外の時
+            query = query.limit(filters['limit'])
 
-    df = pd.read_sql(query.statement, query.session.bind)
+        df = pd.read_sql(query.statement, query.session.bind)
     return df
 
 
 df = filter_account_book(filters)
 
-
-# セッションのクローズ
-session.close()
 selected = st.dataframe(
     df.drop(columns=['id']),
     hide_index=True,
@@ -134,7 +131,6 @@ selected = st.dataframe(
         
     }
 )
-
 
 if st.button(
         'Delete selected rows', 

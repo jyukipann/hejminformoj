@@ -163,63 +163,86 @@ left_column, right_column = st.columns(2)
 # データの読み込み
 # 棒グラフ（支払者別）カテゴリも考慮したい
 with left_column:
-    st.markdown('### 支払者別')
+    st.markdown('### 支払者別 (カテゴリ別)')
     @st.cache_data
-    def get_payer_total_amount():
+    def get_payer_category_total_amount():
         with SessionLocal() as session:
             query = (
                 session.query(
                     Payer.name,
+                    Category.name.label('category'),
                     func.sum(FinancialTransaction.amount).label('total_amount')
                 )
                 .join(Payer, FinancialTransaction.payer_id == Payer.id)
-                .group_by(Payer.name)
+                .join(Category, FinancialTransaction.category_id == Category.id)
+                .group_by(Payer.name, Category.name)
             )
             df = pd.read_sql(query.statement, query.session.bind)
+            df.sort_values('name', ascending=False, inplace=True)
         return df
-    df = get_payer_total_amount()
+    df = get_payer_category_total_amount()
     
-
-    st.bar_chart(df.set_index('name'))
-    st.write(df)
+    st.bar_chart(df, x='name', y='total_amount', color='category')
+    with st.expander('Data'):
+        st.write(df)
+    # st.bar_chart(df.set_index(['name', 'category']).unstack())
 with right_column:
     # 割り勘を考慮した棒グラフ（支払者別）　カテゴリも考慮したい
-    st.markdown('### 割り勘')
+    st.markdown('### 割り勘 (カテゴリ別)')
     @st.cache_data
-    def get_split_bill_payer_total_amount():
+    def get_split_bill_payer_category_total_amount():
         with SessionLocal() as session:
             query = (
                 session.query(
                     Payer.name,
+                    Category.name.label('category'),
                     func.sum(FinancialTransaction.amount).label('total_amount')
                 )
+                .join(Category, FinancialTransaction.category_id == Category.id)
                 .join(Payer, FinancialTransaction.payer_id == Payer.id)
                 .filter(FinancialTransaction.is_split_bill == True)
-                .group_by(Payer.name)
+                .group_by(Payer.name, Category.name)
             )
             df = pd.read_sql(query.statement, query.session.bind)
+            df.sort_values('name', ascending=False, inplace=True)
         return df
-    df = get_split_bill_payer_total_amount()
-    st.bar_chart(df.set_index('name'))
+    df = get_split_bill_payer_category_total_amount()
+    st.bar_chart(df, x='name', y='total_amount', color='category')
+    with st.expander('Data'):
+        st.write(df)
 
-    st.write(df)
-
-#　月ごとの支出 カテゴリごとにしたい
-st.markdown('### 月ごとの支出')
+# 月ごとの支出 カテゴリごとにしたい
+st.markdown('### 月ごとの支出 (カテゴリ別)')
 @st.cache_data
-def get_monthly_total_amount():
+def get_monthly_category_total_amount():
     with SessionLocal() as session:
         query = (
             session.query(
                 func.date_format(FinancialTransaction.date, '%Y-%m').label('month'),
+                Category.name.label('category'),
                 func.sum(FinancialTransaction.amount).label('total_amount')
             )
-            .group_by('month')
+            .join(Category, FinancialTransaction.category_id == Category.id)
+            .group_by('month', 'category')
         )
         df = pd.read_sql(query.statement, query.session.bind)
     df['month'] = pd.to_datetime(df['month'])
+    # format yyyy-mm-dd to yyyy-mm
+    df['month'] = df['month'].dt.strftime('%Y-%m')
+    # sort by month
+    df = df.sort_values('month')
     df = df.set_index('month')
     return df
-df = get_monthly_total_amount()
-st.bar_chart(df)
+@st.cache_data
+def sum_by_month(df):
+    df = df.groupby('month').sum()
+    df.drop(columns=['category'], inplace=True)
+    return df
+
+df = get_monthly_category_total_amount()
+# st.write(df)
+# st.write(df.index)
+st.bar_chart(df, y='total_amount', color='category',horizontal=True)
+with st.expander('Data'):
+    st.write(sum_by_month(df))
 

@@ -3,6 +3,7 @@ from models.about_account_book import Category, Payer, TransactionType, Financia
 import pandas as pd # type: ignore
 from tools.db_init import get_engine
 import datetime
+from sqlalchemy import func
 from tools.simple_auth import check_password
 if not check_password():
     st.stop()
@@ -144,3 +145,81 @@ if st.button(
         session.commit()
         session.close()
     st.rerun()
+
+# chart space
+st.markdown('---')
+st.markdown('## Chart')
+st.markdown('### 総支出')
+@st.cache_data
+def get_total_amount():
+    with SessionLocal() as session:
+        query = session.query(func.sum(FinancialTransaction.amount))
+        total_amount = query.scalar()
+    return total_amount
+total_amount = get_total_amount()
+st.markdown(f'総支出: {total_amount}円')
+
+left_column, right_column = st.columns(2)
+# データの読み込み
+# 棒グラフ（支払者別）カテゴリも考慮したい
+with left_column:
+    st.markdown('### 支払者別')
+    @st.cache_data
+    def get_payer_total_amount():
+        with SessionLocal() as session:
+            query = (
+                session.query(
+                    Payer.name,
+                    func.sum(FinancialTransaction.amount).label('total_amount')
+                )
+                .join(Payer, FinancialTransaction.payer_id == Payer.id)
+                .group_by(Payer.name)
+            )
+            df = pd.read_sql(query.statement, query.session.bind)
+        return df
+    df = get_payer_total_amount()
+    
+
+    st.bar_chart(df.set_index('name'))
+    st.write(df)
+with right_column:
+    # 割り勘を考慮した棒グラフ（支払者別）　カテゴリも考慮したい
+    st.markdown('### 割り勘')
+    @st.cache_data
+    def get_split_bill_payer_total_amount():
+        with SessionLocal() as session:
+            query = (
+                session.query(
+                    Payer.name,
+                    func.sum(FinancialTransaction.amount).label('total_amount')
+                )
+                .join(Payer, FinancialTransaction.payer_id == Payer.id)
+                .filter(FinancialTransaction.is_split_bill == True)
+                .group_by(Payer.name)
+            )
+            df = pd.read_sql(query.statement, query.session.bind)
+        return df
+    df = get_split_bill_payer_total_amount()
+    st.bar_chart(df.set_index('name'))
+
+    st.write(df)
+
+#　月ごとの支出 カテゴリごとにしたい
+st.markdown('### 月ごとの支出')
+@st.cache_data
+def get_monthly_total_amount():
+    with SessionLocal() as session:
+        query = (
+            session.query(
+                func.date_format(FinancialTransaction.date, '%Y-%m').label('month'),
+                func.sum(FinancialTransaction.amount).label('total_amount')
+            )
+            .group_by('month')
+        )
+        df = pd.read_sql(query.statement, query.session.bind)
+    df['month'] = pd.to_datetime(df['month'])
+    df = df.set_index('month')
+    return df
+df = get_monthly_total_amount()
+st.bar_chart(df)
+

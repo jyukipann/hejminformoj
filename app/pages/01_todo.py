@@ -1,5 +1,4 @@
 import streamlit as st
-import requests
 from tools.github_api import (
     get_todos_in,
     todo_split_by_status
@@ -20,7 +19,6 @@ todo = todo_split_by_status(todo)
 
 default_titles = ['Todo', 'In Progress', 'Done']
 titles = set(todo.keys()) | set(default_titles)
-t_cols = st.columns(len(titles))
 cols = st.columns(len(titles))
 non_default_titles = set(titles) - set(default_titles)
 
@@ -32,11 +30,11 @@ def add_todo_column(todo:dict, col):
 titles = list(todo.keys())
 
 for i, title in zip([0, -2, -1], default_titles):
-    with t_cols[i]:
+    with cols[i]:
         st.title(title)
     add_todo_column(todo[title] if title in todo else [], cols[i])
 
 for i, title in enumerate(non_default_titles):
-    with t_cols[i+1]:
+    with cols[i+1]:
         st.title(title)
     add_todo_column(todo[title], cols[i+1])

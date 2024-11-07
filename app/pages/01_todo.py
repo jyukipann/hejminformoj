@@ -4,6 +4,9 @@ from tools.github_api import (
     get_todos_in,
     todo_split_by_status
 )
+from tools.simple_auth import check_password
+if not check_password():
+    st.stop()
 
 # Streamlitの基本構成
 st.title("GitHub Kanban Board")

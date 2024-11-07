@@ -17,19 +17,23 @@ todo = todo_split_by_status(todo)
 
 default_titles = ['Todo', 'In Progress', 'Done']
 titles = set(todo.keys()) | set(default_titles)
+t_cols = st.columns(len(titles))
 cols = st.columns(len(titles))
 non_default_titles = set(titles) - set(default_titles)
 
-def add_todo_column(title:str, todo:dict, col):
+def add_todo_column(todo:dict, col):
     with col:
-        st.title(title)
         for t in todo:
             with st.container(border=True):
                 st.write(t['title'])
 titles = list(todo.keys())
 
 for i, title in zip([0, -2, -1], default_titles):
-    add_todo_column(title, todo[title] if title in todo else [], cols[i])
+    with t_cols[i]:
+        st.title(title)
+    add_todo_column(todo[title] if title in todo else [], cols[i])
 
 for i, title in enumerate(non_default_titles):
-    add_todo_column(title, todo[title], cols[i+1])
+    with t_cols[i+1]:
+        st.title(title)
+    add_todo_column(todo[title], cols[i+1])

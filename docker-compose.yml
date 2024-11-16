@@ -1,5 +1,6 @@
 services:
   hejminformoj:
+    restart: always
     build: ./streamlit
     ports:
       - "7610:8501"

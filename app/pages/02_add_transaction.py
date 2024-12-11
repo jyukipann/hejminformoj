@@ -46,7 +46,8 @@ with st.form("financial_transaction_form"):
     amount = st.number_input("金額", min_value=0, step=1)
     
     category_options = [c.name for c in get_categories()]
-    category_name = st.selectbox("カテゴリ", options=category_options)
+    食費index = category_options.index("食費")
+    category_name = st.selectbox("カテゴリ", options=category_options, index=食費index)
     
     payer_options = [p.name for p in get_payers()]
     payer_name = st.selectbox("支払者", options=payer_options)
@@ -56,7 +57,7 @@ with st.form("financial_transaction_form"):
     
     description = st.text_input("説明（商品、サービス、その他）")
     
-    is_split_bill = st.checkbox("割り勘ですか？")
+    is_split_bill = st.checkbox("割り勘ですか？", value=True)
 
     submit_button = st.form_submit_button("取引を追加")
 

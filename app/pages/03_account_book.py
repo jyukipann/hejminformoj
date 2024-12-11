@@ -5,6 +5,7 @@ from tools.db_init import get_engine
 import datetime
 from sqlalchemy import func
 from tools.simple_auth import check_password
+from dateutil.relativedelta import relativedelta
 if not check_password():
     st.stop()
 
@@ -23,8 +24,7 @@ with SessionLocal() as session:
 if 'search_filters' not in st.session_state:
     today = datetime.date.today()
     start_data = today.replace(day=1)
-    end_data = (
-        today.replace(day=1, month=today.month+1) - datetime.timedelta(days=1))
+    end_data = start_data + relativedelta(months=1) - datetime.timedelta(days=1)
     st.session_state['search_filters'] = {
         'is_filter_by_date': False,
         'date': (start_data, end_data), # start to end
@@ -53,7 +53,7 @@ with st.expander('Filters', expanded=True):
         payer_options = [p.name for p in session.query(Payer).all()]
         transaction_type_options = [t.name for t in session.query(TransactionType).all()]
     
-    categories = st.multiselect('categories', category_options)
+    categories = st.multiselect('categories', category_options, )
     filters['categories'] = categories
 
     payers = st.multiselect('Payer', payer_options, payer_options)
